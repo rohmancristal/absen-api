@@ -3,25 +3,52 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
+    // Register
+    public function register(Request $request)
     {
-        $credentials = $request->only('email', 'password');
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
-            $token = $user->createToken('API Token')->plainTextToken;
-            return response()->json(['token' => $token], 200);
-        }
-        return response()->json(['error' => 'Unauthorized'], 401);
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        return response()->json(['message' => 'User registered successfully'], 201);
     }
 
-    public function logout(Request $request)
+    // Login
+    public function login(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
-        return response()->json(['message' => 'Logged out'], 200);
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+
+        if (Auth::attempt($request->only('email', 'password'))) {
+            $user = Auth::user();
+            $token = $user->createToken('authToken')->plainTextToken;
+
+            return response()->json(['token' => $token, 'user' => $user], 200);
+        }
+
+        return response()->json(['message' => 'Invalid credentials'], 401);
+    }
+
+    // Forgot Password (Simplified)
+    public function forgotPassword(Request $request)
+    {
+        // Implement feature as needed (e.g., reset link or OTP)
     }
 }
+
