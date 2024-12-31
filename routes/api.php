@@ -1,15 +1,19 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SiswaController;
+use App\Http\Controllers\AbsenController;
+use App\Http\Controllers\LaporanController;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 
-Route::get('/attendance', [AttendanceController::class, 'index']);
-Route::get('/attendance/{id}', [AttendanceController::class, 'show']);
-Route::post('/attendance', [AttendanceController::class, 'store']);
-Route::put('/attendance/{id}', [AttendanceController::class, 'update']);
-Route::delete('/attendance/{id}', [AttendanceController::class, 'destroy']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::resource('/siswa', SiswaController::class);
+    Route::resource('/absen', AbsenController::class);
+    Route::resource('/laporan', LaporanController::class);
+});
+
